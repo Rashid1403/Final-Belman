@@ -19,6 +19,7 @@ import GUI.Models.ProductionSleeveTableModel;
 import GUI.Models.StockList2TableModel;
 import GUI.Models.StockListTableModel;
 import GUI.Models.SleeveTableModel;
+import GUI.Models.UrgentTablemodel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -27,6 +28,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
@@ -64,6 +66,7 @@ public class Overview extends javax.swing.JFrame implements Observer
     private ProductionSleeveTableModel modelProduction = null;
     private StockList2TableModel modelStocklist = null;
     private SleeveTableModel slmodel = null;
+    private UrgentTablemodel modelUrgent = null; 
     private DateTime startTime, endTime;
     private DateTimeFormatter jodaTimeFormat = DateTimeFormat.forPattern("dd/MM/YYYY HH:mm:ss");
     private int elapsedSec, elapsedMin, elapsedHour;
@@ -79,7 +82,7 @@ public class Overview extends javax.swing.JFrame implements Observer
      * Opretter en nye form a Overview
      */
     //<editor-fold defaultstate="collapsed" desc="Overview constructor">
-    public Overview()
+    public Overview() throws IOException, SQLException
     {
         loadManagers();
         Locale locale = Locale.getDefault();
@@ -93,6 +96,7 @@ public class Overview extends javax.swing.JFrame implements Observer
         setLocationRelativeTo(null);
         productionSleeveListSelectioner1();
         productionSleeveListSelectioner2();
+        productionSleeveListSelectioner3();
         pausedOrderTable();
         localeLanguage.setLocale(locale);
         mouseListener();
@@ -104,6 +108,7 @@ public class Overview extends javax.swing.JFrame implements Observer
         updateGUILanguage();
 //        selectedOrderSleeve1();
 //        selectedOrderSleeve2();
+//        ord = o;
     }
     //</editor-fold>
 
@@ -400,7 +405,7 @@ public class Overview extends javax.swing.JFrame implements Observer
         lblEmail.setText(rb.getString("Overview.lblEmail.text"));
         lblOrder.setText(rb.getString("Overview.lblOrder.text"));
         lblPhone.setText(rb.getString("Overview.lblPhone.text"));
-        lblQuantity.setText(rb.getString("Overview.lblQuantity.text"));
+        //lblQuantity.setText(rb.getString("Overview.lblQuantity.text"));
         lblSalesOrderId.setText(rb.getString("Overview.lblSalesOrderId.text"));
         lblThickness.setText(rb.getString("Overview.lblThickness.text"));
         lblWidth.setText(rb.getString("Overview.lblWidth.text"));
@@ -584,6 +589,59 @@ public class Overview extends javax.swing.JFrame implements Observer
     }
     //</editor-fold>
 
+//    tblProductionSleeveUrgent
+    
+     private void productionSleeveListSelectioner3() throws IOException, SQLException
+    {
+
+//        try
+//        {
+            managerStockItem.addObserver(this);
+            modelProduction = new ProductionSleeveTableModel(managerOrder.getAll());
+            tblProductionSleeveUrgent.setModel(modelProduction);
+            
+            managerOrder.addObserver(this);
+            modelUrgent = new UrgentTablemodel(managerOrder.getAll());
+            tblProductionSleeveUrgent.setModel(modelUrgent);
+//            
+//            tblProductionSleeveUrgent.getSelectionModel().addListSelectionListener(new ListSelectionListener()
+//            {
+//                @Override
+//                public void valueChanged(ListSelectionEvent es)
+//                {
+//                    int selectedRow = tblProductionSleeve.getSelectedRow();
+//                    if (selectedRow == -1)
+//                    {
+//                        return;
+//                    }
+//                    Order o = modelUrgent.getEventsByRow(selectedRow);
+//                            ord = o;
+//                    selectedOrderSleeve1();
+////                    selectedOrderSleeve2();
+//                            
+//                    try
+//                    {
+//                        if (!managerStockItem.getItemByOrder(o).isEmpty())
+//                        {
+//                            modelStocklist = new StockList2TableModel(managerStockItem.getItemByOrder(o));
+//                            tblStockList.setModel(modelStocklist);
+//                        }
+//                        else
+//                        {
+//                            modelEmptyStocklist = new StockListTableModel();
+//                            tblStockList.setModel(modelEmptyStocklist);
+//                        }
+//                        
+//                    }
+//                    catch (Exception e)
+//                    {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            });
+//        }
+        }
+    
     /**
      * Metoder der udfylder lister med alle ordre og alle stockitems. De to lister
      * opdateres afhængig af hinanden. Stocklist tabellen viser de stocks der passer
@@ -1063,14 +1121,14 @@ public class Overview extends javax.swing.JFrame implements Observer
                 String message = "Unable to update order";
                 JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
             }
-         //   new SleeveInfo(o, operator).setVisible(true);
+            new SleeveInfo(ord, operator).setVisible(true);
         }
         else
         {
             String message = "Production Order " + ord.getOrderId() + "'s status is not in progress or already paused.";
             JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
         }
-        dispose();
+//        dispose();
     }
     //</editor-fold>
     
@@ -1089,7 +1147,7 @@ public class Overview extends javax.swing.JFrame implements Observer
         try
         {
             managerOrder.update(ord);
-            dispose();
+//            dispose();
         }
         catch (Exception e)
         {
@@ -1117,7 +1175,6 @@ public class Overview extends javax.swing.JFrame implements Observer
         pnlOrderInfo = new javax.swing.JPanel();
         lblOrder = new javax.swing.JLabel();
         txtOrderId = new javax.swing.JTextField();
-        lblQuantity = new javax.swing.JLabel();
         lblDate = new javax.swing.JLabel();
         txtDate = new javax.swing.JTextField();
         pnlMeasurements = new javax.swing.JPanel();
@@ -1134,7 +1191,6 @@ public class Overview extends javax.swing.JFrame implements Observer
         txtCustomerName = new javax.swing.JTextField();
         txtEmail = new javax.swing.JTextField();
         txtPhone = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         pnlProductionInformation3 = new javax.swing.JPanel();
         lblOrderName3 = new javax.swing.JLabel();
@@ -1143,16 +1199,6 @@ public class Overview extends javax.swing.JFrame implements Observer
         txtOrderId4 = new javax.swing.JTextField();
         scrpSleeve3 = new javax.swing.JScrollPane();
         tblSleeve3 = new javax.swing.JTable();
-        pnlCuttingConsole18 = new javax.swing.JPanel();
-        btnStart18 = new javax.swing.JButton();
-        btnPause18 = new javax.swing.JButton();
-        btnFinish19 = new javax.swing.JButton();
-        lblEndTime18 = new javax.swing.JLabel();
-        lblTimeSpent18 = new javax.swing.JLabel();
-        txtStartTime18 = new javax.swing.JTextField();
-        txtEndTime18 = new javax.swing.JTextField();
-        txtTimeSpent18 = new javax.swing.JTextField();
-        lblStartTime18 = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         lblId1 = new javax.swing.JLabel();
         txtId1 = new javax.swing.JTextField();
@@ -1164,6 +1210,20 @@ public class Overview extends javax.swing.JFrame implements Observer
         lblHasCut1 = new javax.swing.JLabel();
         txtHasCut1 = new javax.swing.JTextField();
         lblSleeves2 = new javax.swing.JLabel();
+        pnlCuttingConsole18 = new javax.swing.JPanel();
+        btnStart18 = new javax.swing.JButton();
+        btnPause18 = new javax.swing.JButton();
+        btnFinish19 = new javax.swing.JButton();
+        lblEndTime18 = new javax.swing.JLabel();
+        lblTimeSpent18 = new javax.swing.JLabel();
+        txtStartTime18 = new javax.swing.JTextField();
+        txtEndTime18 = new javax.swing.JTextField();
+        txtTimeSpent18 = new javax.swing.JTextField();
+        lblStartTime18 = new javax.swing.JLabel();
+        jPanel9 = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        tblProductionSleeveUrgent = new javax.swing.JTable();
+        jLabel1 = new javax.swing.JLabel();
         pnlCutting2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblProductionSleeve = new javax.swing.JTable();
@@ -1272,7 +1332,7 @@ public class Overview extends javax.swing.JFrame implements Observer
         pnlOrderList.setLayout(pnlOrderListLayout);
         pnlOrderListLayout.setHorizontalGroup(
             pnlOrderListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(scrOrderList, javax.swing.GroupLayout.DEFAULT_SIZE, 1248, Short.MAX_VALUE)
+            .addComponent(scrOrderList)
         );
         pnlOrderListLayout.setVerticalGroup(
             pnlOrderListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1288,8 +1348,6 @@ public class Overview extends javax.swing.JFrame implements Observer
         lblOrder.setText(bundle.getString("Overview.lblOrder.text")); // NOI18N
 
         txtOrderId.setEditable(false);
-
-        lblQuantity.setText(bundle.getString("Overview.lblQuantity.text")); // NOI18N
 
         lblDate.setText(bundle.getString("Overview.lblDate.text")); // NOI18N
 
@@ -1397,8 +1455,6 @@ public class Overview extends javax.swing.JFrame implements Observer
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jLabel1.setText(bundle.getString("Overview.jLabel1.text")); // NOI18N
-
         javax.swing.GroupLayout pnlOrderInfoLayout = new javax.swing.GroupLayout(pnlOrderInfo);
         pnlOrderInfo.setLayout(pnlOrderInfoLayout);
         pnlOrderInfoLayout.setHorizontalGroup(
@@ -1411,13 +1467,9 @@ public class Overview extends javax.swing.JFrame implements Observer
                     .addGroup(pnlOrderInfoLayout.createSequentialGroup()
                         .addGroup(pnlOrderInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lblDate)
-                            .addComponent(lblOrder)
-                            .addComponent(lblQuantity))
-                        .addGap(18, 18, 18)
+                            .addComponent(lblOrder))
+                        .addGap(66, 66, 66)
                         .addGroup(pnlOrderInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(pnlOrderInfoLayout.createSequentialGroup()
-                                .addGap(72, 72, 72)
-                                .addComponent(jLabel1))
                             .addComponent(txtDate, javax.swing.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE)
                             .addComponent(txtOrderId))
                         .addGap(21, 21, 21)))
@@ -1434,11 +1486,7 @@ public class Overview extends javax.swing.JFrame implements Observer
                 .addGroup(pnlOrderInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblDate)
                     .addComponent(txtDate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(pnlOrderInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(lblQuantity))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(20, 20, 20)
                 .addComponent(pnlMeasurements, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(pnlCustomerInfo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -1497,94 +1545,6 @@ public class Overview extends javax.swing.JFrame implements Observer
             }
         ));
         scrpSleeve3.setViewportView(tblSleeve3);
-
-        pnlCuttingConsole18.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), bundle.getString("Overview.pnlCuttingConsole18.border.border.title")))); // NOI18N
-
-        btnStart18.setText(bundle.getString("Overview.btnStart18.text")); // NOI18N
-        btnStart18.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnStart18ActionPerformed(evt);
-            }
-        });
-
-        btnPause18.setText(bundle.getString("Overview.btnPause18.text")); // NOI18N
-        btnPause18.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnPause18ActionPerformed(evt);
-            }
-        });
-
-        btnFinish19.setText(bundle.getString("Overview.btnFinish19.text")); // NOI18N
-        btnFinish19.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnFinish19ActionPerformed(evt);
-            }
-        });
-
-        lblEndTime18.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        lblEndTime18.setText(bundle.getString("Overview.lblEndTime18.text")); // NOI18N
-
-        lblTimeSpent18.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        lblTimeSpent18.setText(bundle.getString("Overview.lblTimeSpent18.text")); // NOI18N
-
-        txtStartTime18.setEditable(false);
-
-        txtEndTime18.setEditable(false);
-
-        txtTimeSpent18.setEditable(false);
-
-        lblStartTime18.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        lblStartTime18.setText(bundle.getString("Overview.lblStartTime18.text")); // NOI18N
-
-        javax.swing.GroupLayout pnlCuttingConsole18Layout = new javax.swing.GroupLayout(pnlCuttingConsole18);
-        pnlCuttingConsole18.setLayout(pnlCuttingConsole18Layout);
-        pnlCuttingConsole18Layout.setHorizontalGroup(
-            pnlCuttingConsole18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlCuttingConsole18Layout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addGroup(pnlCuttingConsole18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(pnlCuttingConsole18Layout.createSequentialGroup()
-                        .addComponent(btnStart18)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnPause18)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnFinish19)
-                        .addGap(0, 14, Short.MAX_VALUE))
-                    .addGroup(pnlCuttingConsole18Layout.createSequentialGroup()
-                        .addGroup(pnlCuttingConsole18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(lblStartTime18)
-                            .addGroup(pnlCuttingConsole18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(lblTimeSpent18, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(lblEndTime18, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(pnlCuttingConsole18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtStartTime18, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(txtEndTime18)
-                            .addComponent(txtTimeSpent18, javax.swing.GroupLayout.Alignment.TRAILING))))
-                .addGap(26, 26, 26))
-        );
-        pnlCuttingConsole18Layout.setVerticalGroup(
-            pnlCuttingConsole18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlCuttingConsole18Layout.createSequentialGroup()
-                .addGap(29, 29, 29)
-                .addGroup(pnlCuttingConsole18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnStart18)
-                    .addComponent(btnPause18)
-                    .addComponent(btnFinish19))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(pnlCuttingConsole18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblStartTime18)
-                    .addComponent(txtStartTime18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(pnlCuttingConsole18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblEndTime18)
-                    .addComponent(txtEndTime18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(pnlCuttingConsole18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblTimeSpent18)
-                    .addComponent(txtTimeSpent18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(4, 4, 4))
-        );
 
         lblId1.setText(bundle.getString("Overview.lblId1.text")); // NOI18N
 
@@ -1665,11 +1625,99 @@ public class Overview extends javax.swing.JFrame implements Observer
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtHasCut1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblHasCut1))
-                .addContainerGap(36, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         lblSleeves2.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
         lblSleeves2.setText(bundle.getString("Overview.lblSleeves2.text")); // NOI18N
+
+        pnlCuttingConsole18.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), bundle.getString("Overview.pnlCuttingConsole18.border.border.title")))); // NOI18N
+
+        btnStart18.setText(bundle.getString("Overview.btnStart18.text")); // NOI18N
+        btnStart18.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnStart18ActionPerformed(evt);
+            }
+        });
+
+        btnPause18.setText(bundle.getString("Overview.btnPause18.text")); // NOI18N
+        btnPause18.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPause18ActionPerformed(evt);
+            }
+        });
+
+        btnFinish19.setText(bundle.getString("Overview.btnFinish19.text")); // NOI18N
+        btnFinish19.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnFinish19ActionPerformed(evt);
+            }
+        });
+
+        lblEndTime18.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        lblEndTime18.setText(bundle.getString("Overview.lblEndTime18.text")); // NOI18N
+
+        lblTimeSpent18.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        lblTimeSpent18.setText(bundle.getString("Overview.lblTimeSpent18.text")); // NOI18N
+
+        txtStartTime18.setEditable(false);
+
+        txtEndTime18.setEditable(false);
+
+        txtTimeSpent18.setEditable(false);
+
+        lblStartTime18.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+        lblStartTime18.setText(bundle.getString("Overview.lblStartTime18.text")); // NOI18N
+
+        javax.swing.GroupLayout pnlCuttingConsole18Layout = new javax.swing.GroupLayout(pnlCuttingConsole18);
+        pnlCuttingConsole18.setLayout(pnlCuttingConsole18Layout);
+        pnlCuttingConsole18Layout.setHorizontalGroup(
+            pnlCuttingConsole18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlCuttingConsole18Layout.createSequentialGroup()
+                .addGap(20, 20, 20)
+                .addGroup(pnlCuttingConsole18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(pnlCuttingConsole18Layout.createSequentialGroup()
+                        .addComponent(btnStart18)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnPause18)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnFinish19)
+                        .addGap(0, 22, Short.MAX_VALUE))
+                    .addGroup(pnlCuttingConsole18Layout.createSequentialGroup()
+                        .addGroup(pnlCuttingConsole18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(lblStartTime18)
+                            .addGroup(pnlCuttingConsole18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(lblTimeSpent18, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblEndTime18, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(pnlCuttingConsole18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtEndTime18)
+                            .addComponent(txtTimeSpent18, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(txtStartTime18))))
+                .addContainerGap())
+        );
+        pnlCuttingConsole18Layout.setVerticalGroup(
+            pnlCuttingConsole18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlCuttingConsole18Layout.createSequentialGroup()
+                .addGap(29, 29, 29)
+                .addGroup(pnlCuttingConsole18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnStart18)
+                    .addComponent(btnPause18)
+                    .addComponent(btnFinish19))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnlCuttingConsole18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblStartTime18)
+                    .addComponent(txtStartTime18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnlCuttingConsole18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblEndTime18)
+                    .addComponent(txtEndTime18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnlCuttingConsole18Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblTimeSpent18)
+                    .addComponent(txtTimeSpent18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(4, 4, 4))
+        );
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -1679,43 +1727,69 @@ public class Overview extends javax.swing.JFrame implements Observer
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(pnlProductionInformation3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(scrpSleeve3, javax.swing.GroupLayout.PREFERRED_SIZE, 291, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(lblSleeves2))
-                        .addGap(18, 18, 18))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addGap(6, 6, 6)))
                 .addComponent(pnlCuttingConsole18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(53, 53, 53))
+                .addGap(45, 45, 45))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(pnlProductionInformation3, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(lblSleeves2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(scrpSleeve3, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(21, 21, 21)
-                .addComponent(pnlCuttingConsole18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(pnlProductionInformation3, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(lblSleeves2)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(scrpSleeve3, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(pnlCuttingConsole18, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(30, Short.MAX_VALUE))
         );
+
+        tblProductionSleeveUrgent.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane3.setViewportView(tblProductionSleeveUrgent);
+
+        javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
+        jPanel9.setLayout(jPanel9Layout);
+        jPanel9Layout.setHorizontalGroup(
+            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
+        );
+        jPanel9Layout.setVerticalGroup(
+            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel9Layout.createSequentialGroup()
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+
+        jLabel1.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        jLabel1.setText(bundle.getString("Overview.jLabel1.text")); // NOI18N
 
         javax.swing.GroupLayout pnlOrderLayout = new javax.swing.GroupLayout(pnlOrder);
         pnlOrder.setLayout(pnlOrderLayout);
@@ -1727,22 +1801,31 @@ public class Overview extends javax.swing.JFrame implements Observer
                     .addComponent(pnlOrderList, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(pnlOrderLayout.createSequentialGroup()
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 929, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 352, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(pnlOrderInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 580, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(pnlOrderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(pnlOrderInfo, javax.swing.GroupLayout.PREFERRED_SIZE, 580, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1))
                 .addGap(6, 6, 6))
         );
         pnlOrderLayout.setVerticalGroup(
             pnlOrderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlOrderLayout.createSequentialGroup()
+            .addGroup(pnlOrderLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(pnlOrderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(pnlOrderInfo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(pnlOrderLayout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(6, 6, 6)
+                        .addComponent(jPanel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(pnlOrderInfo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(162, 162, 162))
                     .addGroup(pnlOrderLayout.createSequentialGroup()
                         .addComponent(pnlOrderList, javax.swing.GroupLayout.PREFERRED_SIZE, 457, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
         );
 
         tpaneOverview.addTab(bundle.getString("Overview.pnlOrder.TabConstraints.tabTitle_1"), pnlOrder); // NOI18N
@@ -1899,33 +1982,36 @@ public class Overview extends javax.swing.JFrame implements Observer
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGap(83, 83, 83)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtName, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtId, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(83, 83, 83)
+                        .addComponent(txtId, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(lblFirstName)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtName, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
             .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel3Layout.createSequentialGroup()
                     .addContainerGap()
-                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(lblFirstName)
-                        .addComponent(lblId))
-                    .addContainerGap(130, Short.MAX_VALUE)))
+                    .addComponent(lblId)
+                    .addContainerGap(175, Short.MAX_VALUE)))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addComponent(txtId, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(txtName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblFirstName))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel3Layout.createSequentialGroup()
                     .addGap(9, 9, 9)
                     .addComponent(lblId)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(lblFirstName)
-                    .addContainerGap(16, Short.MAX_VALUE)))
+                    .addContainerGap(45, Short.MAX_VALUE)))
         );
 
         pnlCuttingConsole17.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), bundle.getString("Overview.pnlCuttingConsole17.border.border.title")))); // NOI18N
@@ -1979,7 +2065,7 @@ public class Overview extends javax.swing.JFrame implements Observer
                         .addComponent(btnPause17)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(btnFinish18)
-                        .addGap(0, 14, Short.MAX_VALUE))
+                        .addGap(0, 22, Short.MAX_VALUE))
                     .addGroup(pnlCuttingConsole17Layout.createSequentialGroup()
                         .addGroup(pnlCuttingConsole17Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(lblStartTime17)
@@ -1988,10 +2074,10 @@ public class Overview extends javax.swing.JFrame implements Observer
                                 .addComponent(lblEndTime17, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(pnlCuttingConsole17Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtStartTime17, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(txtEndTime17)
-                            .addComponent(txtTimeSpent17, javax.swing.GroupLayout.Alignment.TRAILING))))
-                .addGap(26, 26, 26))
+                            .addComponent(txtTimeSpent17, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(txtStartTime17))))
+                .addContainerGap())
         );
         pnlCuttingConsole17Layout.setVerticalGroup(
             pnlCuttingConsole17Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2035,25 +2121,30 @@ public class Overview extends javax.swing.JFrame implements Observer
                             .addComponent(txtHasCut, javax.swing.GroupLayout.PREFERRED_SIZE, 163, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(jPanel8Layout.createSequentialGroup()
                         .addComponent(pnlProductionInformation2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lblSleeves)
                             .addComponent(scrpSleeve2, javax.swing.GroupLayout.PREFERRED_SIZE, 291, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(pnlCuttingConsole17, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(83, 83, 83))
+                .addGap(100, 100, 100))
         );
         jPanel8Layout.setVerticalGroup(
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel8Layout.createSequentialGroup()
-                .addComponent(lblSleeves)
-                .addGap(3, 3, 3)
+                .addGap(5, 5, 5)
                 .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel8Layout.createSequentialGroup()
-                        .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(pnlProductionInformation2, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(scrpSleeve2, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(18, 18, 18)
+                        .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel8Layout.createSequentialGroup()
+                                .addComponent(lblSleeves)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 11, Short.MAX_VALUE)
+                                .addComponent(scrpSleeve2, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                            .addGroup(jPanel8Layout.createSequentialGroup()
+                                .addGap(16, 16, 16)
+                                .addComponent(pnlProductionInformation2, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                         .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel8Layout.createSequentialGroup()
                                 .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -2065,7 +2156,7 @@ public class Overview extends javax.swing.JFrame implements Observer
                                     .addComponent(lblHasCut)))
                             .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(pnlCuttingConsole17, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(19, Short.MAX_VALUE))
+                .addContainerGap(17, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout pnlCutting2Layout = new javax.swing.GroupLayout(pnlCutting2);
@@ -2078,7 +2169,7 @@ public class Overview extends javax.swing.JFrame implements Observer
                     .addComponent(lblProductionOrder)
                     .addGroup(pnlCutting2Layout.createSequentialGroup()
                         .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, 924, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(586, 586, 586)
+                        .addGap(580, 580, 580)
                         .addGroup(pnlCutting2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 257, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -2088,7 +2179,7 @@ public class Overview extends javax.swing.JFrame implements Observer
                         .addGroup(pnlCutting2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 506, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(lblStock))))
-                .addContainerGap(61, Short.MAX_VALUE))
+                .addContainerGap(100, Short.MAX_VALUE))
         );
         pnlCutting2Layout.setVerticalGroup(
             pnlCutting2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2218,14 +2309,16 @@ public class Overview extends javax.swing.JFrame implements Observer
                         .addComponent(cbxOperator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(lblChangeOperator))
                     .addComponent(pnlLoggedIn, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 14, Short.MAX_VALUE)
                 .addComponent(tpaneOverview, javax.swing.GroupLayout.PREFERRED_SIZE, 705, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnClose)
                     .addComponent(btnReset))
                 .addContainerGap())
         );
+
+        tpaneOverview.getAccessibleContext().setAccessibleName(bundle.getString("Overview.tpaneOverview.AccessibleContext.accessibleName")); // NOI18N
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -2324,8 +2417,10 @@ public class Overview extends javax.swing.JFrame implements Observer
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
+    private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JLabel lblChangeOperator;
     private javax.swing.JLabel lblCustomerName;
     private javax.swing.JLabel lblDate;
@@ -2348,7 +2443,6 @@ public class Overview extends javax.swing.JFrame implements Observer
     private javax.swing.JLabel lblOrderName3;
     private javax.swing.JLabel lblPhone;
     private javax.swing.JLabel lblProductionOrder;
-    private javax.swing.JLabel lblQuantity;
     private javax.swing.JLabel lblSalesOrderId;
     private javax.swing.JLabel lblSleeves;
     private javax.swing.JLabel lblSleeves2;
@@ -2379,6 +2473,7 @@ public class Overview extends javax.swing.JFrame implements Observer
     private javax.swing.JScrollPane scrpSleeve3;
     private javax.swing.JTable tblOrderList;
     private javax.swing.JTable tblProductionSleeve;
+    private javax.swing.JTable tblProductionSleeveUrgent;
     private javax.swing.JTable tblSleeve2;
     private javax.swing.JTable tblSleeve3;
     private javax.swing.JTable tblStockList;
